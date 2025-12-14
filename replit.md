@@ -2,7 +2,14 @@
 
 ## Overview
 
-This is a YouTube video downloader application built with Streamlit. The application allows users to input YouTube URLs, validates them, fetches video metadata (title, duration, thumbnail, channel, view count, upload date), and provides download functionality using yt-dlp as the backend downloading library.
+This is a YouTube to MP3 audio extractor application built with Streamlit. The application allows users to input YouTube URLs, validates them, fetches video metadata (title, duration, thumbnail, channel, view count, upload date), extracts audio, converts to MP3, and provides download functionality using yt-dlp and ffmpeg as the backend.
+
+## Deployment Options
+
+See `DEPLOYMENT.md` for detailed deployment instructions:
+- **Replit**: Full functionality (recommended)
+- **Vercel**: Limited to video info only (download not supported due to serverless limitations)
+- **Streamlit Community Cloud**: Full functionality alternative
 
 ## User Preferences
 

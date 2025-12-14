@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to MP3 Extractor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        input[type="text"]::placeholder {
+            color: #666;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: #e74c3c;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #c0392b;
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .video-info {
+            display: none;
+            margin-top: 1rem;
+        }
+        .video-info.show {
+            display: block;
+        }
+        .thumbnail {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .video-meta {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        .warning {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .note {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube to MP3 Extractor</h1>
+        <p class="subtitle">Extract high-quality audio from YouTube videos</p>
+        
+        <div class="card">
+            <label for="url">Enter YouTube URL</label>
+            <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=...">
+            <button id="fetchBtn" onclick="fetchInfo()">Get Video Info</button>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="video-info" id="videoInfo">
+                <img class="thumbnail" id="thumbnail" src="" alt="Thumbnail">
+                <div class="video-title" id="title"></div>
+                <div class="video-meta" id="meta"></div>
+            </div>
+            
+            <div class="warning" style="margin-top: 1rem;">
+                <strong>Note:</strong> This Vercel deployment only supports fetching video information. 
+                For full download functionality, please use the Replit deployment.
+            </div>
+        </div>
+        
+        <p class="note">Please ensure you have the right to download and use the audio content.</p>
+    </div>
+    
+    <script>
+        async function fetchInfo() {
+            const url = document.getElementById('url').value.trim();
+            const btn = document.getElementById('fetchBtn');
+            const error = document.getElementById('error');
+            const videoInfo = document.getElementById('videoInfo');
+            
+            if (!url) {
+                showError('Please enter a YouTube URL');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            error.classList.remove('show');
+            videoInfo.classList.remove('show');
+            
+            try {
+                const response = await fetch('/api/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch video info');
+                }
+                
+                const info = data.data;
+                document.getElementById('thumbnail').src = info.thumbnail;
+                document.getElementById('title').textContent = info.title;
+                document.getElementById('meta').textContent = 
+                    `${info.channel} | ${formatDuration(info.duration)} | ${formatViews(info.view_count)}`;
+                videoInfo.classList.add('show');
+                
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Get Video Info';
+            }
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+        
+        function formatDuration(seconds) {
+            if (!seconds) return 'Unknown';
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            if (hrs > 0) {
+                return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function formatViews(count) {
+            if (!count) return '';
+            if (count >= 1000000) return `${(count/1000000).toFixed(1)}M views`;
+            if (count >= 1000) return `${(count/1000).toFixed(1)}K views`;
+            return `${count.toLocaleString()} views`;
+        }
+    </script>
+</body>
+</html>
