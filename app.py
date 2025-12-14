@@ -14,7 +14,7 @@ def is_valid_youtube_url(url: str) -> bool:
         r'^(https?://)?(www\.)?youtube\.com/embed/[\w-]+',
         r'^(https?://)?(www\.)?youtube\.com/v/[\w-]+',
         r'^(https?://)?(www\.)?youtube\.com/shorts/[\w-]+',
-        r'^(https?://)?(www\.)?youtu\.be/[\w-]+',
+        r'^(https?://)?(www\.)?youtu\.be/[\w-]+(\?.*)?$',
         r'^(https?://)?(m\.)?youtube\.com/watch\?.*v=[\w-]+',
     ]
     url_stripped = url.strip()
