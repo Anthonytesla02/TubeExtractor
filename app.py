@@ -9,8 +9,16 @@ from pathlib import Path
 
 def is_valid_youtube_url(url: str) -> bool:
     """Validate if the provided URL is a valid YouTube URL."""
-    youtube_regex = r'^(https?://)?(www\.)?(youtube\.com/(watch\?v=|embed/|v/|shorts/)|youtu\.be/)[\w-]+'
-    return bool(re.match(youtube_regex, url.strip()))
+    youtube_patterns = [
+        r'^(https?://)?(www\.)?youtube\.com/watch\?.*v=[\w-]+',
+        r'^(https?://)?(www\.)?youtube\.com/embed/[\w-]+',
+        r'^(https?://)?(www\.)?youtube\.com/v/[\w-]+',
+        r'^(https?://)?(www\.)?youtube\.com/shorts/[\w-]+',
+        r'^(https?://)?(www\.)?youtu\.be/[\w-]+',
+        r'^(https?://)?(m\.)?youtube\.com/watch\?.*v=[\w-]+',
+    ]
+    url_stripped = url.strip()
+    return any(re.match(pattern, url_stripped) for pattern in youtube_patterns)
 
 
 def get_video_info(url: str) -> dict | None:
