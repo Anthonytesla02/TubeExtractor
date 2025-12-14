@@ -23,11 +23,14 @@ def is_valid_youtube_url(url: str) -> bool:
 
 def get_video_info(url: str) -> dict | None:
     """Fetch video metadata without downloading."""
+    cookies_path = Path(__file__).parent / 'cookies.txt'
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
         'extract_flat': False,
     }
+    if cookies_path.exists():
+        ydl_opts['cookiefile'] = str(cookies_path)
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -73,6 +76,7 @@ def download_audio(url: str, quality: str, progress_callback=None) -> tuple[byte
         '320 kbps': '320',
     }
     bitrate = quality_map.get(quality, '192')
+    cookies_path = Path(__file__).parent / 'cookies.txt'
     
     temp_dir = tempfile.mkdtemp()
     
@@ -90,6 +94,9 @@ def download_audio(url: str, quality: str, progress_callback=None) -> tuple[byte
             'quiet': True,
             'no_warnings': True,
         }
+        
+        if cookies_path.exists():
+            ydl_opts['cookiefile'] = str(cookies_path)
         
         if progress_callback:
             def progress_hook(d):
